@@ -1,0 +1,50 @@
+version: '3.7'
+
+
+services:
+ web:
+  build: ./BEproject 
+  command: gunicorn BEproject.wsgi:application --bind 0.0.0.0:8000
+  volumes:
+   - static_volume:/home/akanksha/Desktop/Assignment/BEproject/static
+  expose:
+   - 8000
+  env_file:
+   - ./.env.dev
+  depends_on:
+   - db
+  networks:
+   - nginx_network
+
+ nginx:
+  build: ./nginx
+  volumes:
+   - static_volume:/home/akanksha/Desktop/Assignment/BEproject/static
+  ports:
+   - 1337:80
+  depends_on:
+   - web
+  networks:
+   - nginx_network
+
+ db:
+  image: postgres:12.0-alpine
+  volumes:
+   - postgres_data:/var/lib/postgresql/data/
+  env_file:
+   - ./.env.dev.db
+  networks:
+   - nginx_network
+ #  environment:
+ #  - POSTGRES_USER=beprojectuser
+ #  - POSTGRES_PASSWORD=1234pass
+ #  - POSTGRES_DB=beproject
+
+volumes:
+ postgres_data:
+ static_volume:
+
+networks:
+ nginx_network:
+
+  driver: bridge
